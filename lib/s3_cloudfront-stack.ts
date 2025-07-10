@@ -24,9 +24,9 @@ export class S3CloudfrontStack extends cdk.Stack {
     });
 
     new s3_deployment.BucketDeployment(this, 'DeploymentIndex', {
-      sources: [s3_deployment.Source.asset('./')],
+      sources: [s3_deployment.Source.asset('./website')],
       destinationBucket: s3Bucket,
-      destinationKeyPrefix: '/',
+      destinationKeyPrefix: '',
     })
 
     const s3url = new cdk.CfnOutput(this, 'S3URL', {

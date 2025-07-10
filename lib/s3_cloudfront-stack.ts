@@ -1,16 +1,16 @@
 import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
-import * as s3 from 'aws-cdk-lib/aws-s3'
-import { Values } from 'aws-cdk-lib/aws-cloudwatch';
+import {
+  aws_s3 as s3,
+  aws_s3_deployment as s3_deployment,
+ } from 'aws-cdk-lib';
 
 export class S3CloudfrontStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
-
-    const timestamp = Date.now();
     
     const s3Bucket = new s3.Bucket(this, 'WebSiteBucket', {
-      bucketName: `test-s3-bucket-${timestamp}`,
+      bucketName: `s3-bucket-${cdk.Aws.ACCOUNT_ID}-${cdk.Aws.REGION}`,
       autoDeleteObjects: true,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       publicReadAccess: true,
@@ -22,6 +22,12 @@ export class S3CloudfrontStack extends cdk.Stack {
         restrictPublicBuckets: false,
       }),
     });
+
+    new s3_deployment.BucketDeployment(this, 'DeploymentIndex', {
+      sources: [s3_deployment.Source.asset('./')],
+      destinationBucket: s3Bucket,
+      destinationKeyPrefix: '/',
+    })
 
     const s3url = new cdk.CfnOutput(this, 'S3URL', {
       value: s3Bucket.bucketWebsiteUrl,

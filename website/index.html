@@ -1,12 +1,24 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
     <head>
         <meta charset="UTF-8">
-        <title>S3 Static WebSite
-        </title>
+        <title>My Static WebSite</title>
+        <link rel="stylesheet" href="css/style.css">
     </head>
     <body>
-        <h1>Hello from Amazon S3!</h1>
-        <p>これはS3のテストページです。</p>
+        <header>
+            <h1>Welcome!!</h1>
+            <nav>
+                <a href="index.html">Home</a> |
+                <a href="about.html">About</a>
+            </nav>
+        </header>
+        <main>
+            <p>これはCloudFront経由で配信されるトップページです。</p>
+            <img src="images/logo.png" alt="Logo" width="200">
+        </main>
+        <footer>
+            <p>&copy; 2025 My Website</p>
+        </footer>
     </body>
 </html>

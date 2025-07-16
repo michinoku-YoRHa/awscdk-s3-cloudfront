@@ -3,6 +3,7 @@ import * as cdk from 'aws-cdk-lib';
 import { S3CloudfrontStack } from '../lib/s3_cloudfront-stack';
 import { CertificateStack } from '../lib/certificate-stack';
 import { Route53Stack } from '../lib/route53-stack';
+import { MonitoringStack } from '../lib/monitoring';
 
 const app = new cdk.App();
 const domainName = app.node.tryGetContext('domainName');
@@ -27,7 +28,7 @@ const certificateStack = new CertificateStack(app, 'CertificateStack', {
     crossRegionReferences: true,
 });
 
-new S3CloudfrontStack(app, 'S3CloudfrontStack', {
+const s3CloudfrontStack = new S3CloudfrontStack(app, 'S3CloudfrontStack', {
     env: {
         region: 'ap-northeast-1',
         account: account,
@@ -35,5 +36,14 @@ new S3CloudfrontStack(app, 'S3CloudfrontStack', {
     domainName: domainName,
     certificateArn: certificateStack.certificateArn,
     hostedZone: route53Stack.hostedZone,
+    crossRegionReferences: true,
+});
+
+new MonitoringStack(app, 'MonitoringStack', {
+    env: {
+        region: 'ap-northeast-1',
+        account: account,
+    },
+    distributionId: s3CloudfrontStack.distributhinId,
     crossRegionReferences: true,
 });

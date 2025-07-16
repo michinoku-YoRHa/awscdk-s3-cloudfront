@@ -17,6 +17,8 @@ interface S3CloudfrontStackProps extends cdk.StackProps {
 }
 
 export class S3CloudfrontStack extends cdk.Stack {
+  public readonly distributhinId: string;
+
   constructor(scope: Construct, id: string, props: S3CloudfrontStackProps) {
     super(scope, id, props);
     
@@ -63,6 +65,7 @@ export class S3CloudfrontStack extends cdk.Stack {
       domainNames: [props.domainName],
       certificate: certificate,
     });
+    this.distributhinId = distribution.distributionId;
 
     new route53.ARecord(this, 'AliasRecord', {
       zone: props.hostedZone,

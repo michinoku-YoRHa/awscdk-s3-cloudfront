@@ -1,8 +1,14 @@
+/*各タグに対応した設定を定義 */
 body {
+    /* フォント設定(複数ある場合は左から優先して使われる) */
     font-family: Arial, Helvetica, sans-serif;
+    /* 背景色 */
     background-color: #f4f4f4;
+    /* 文字色 */
     color: #333;
+    /* 余白→他領域と領域の余白 */
     margin: 0;
+    /* 内側余白→領域とコンテンツ(文字や画像)の余白 */
     padding: 0;
 }
 
@@ -14,6 +20,7 @@ header {
 
 nav a {
     color: white;
+    /* 下線の設定(無効化) */
     text-decoration: none;
     margin: 0 10px;
 }
@@ -23,17 +30,23 @@ main {
 }
 
 img {
+    /* 上方向の余白→文章と画像をくっつかせない設定 */
     margin-top: 20px;
 }
 
 footer {
+    /* 上線 */
     border-top: 1px solid #000; 
     background-color: #000;     
-    color: #fff;           
+    color: #fff;
+    /* 文字位置(中央寄せ) */
     text-align: center;
     padding: 10px 0;
-    position: fixed;             
+    /* 領域の位置(画面下固定) */
+    position: fixed;
+    /* 幅(横幅一杯) */   
     width: 100%;
+    /* 画面下端 */
     bottom: 0;
 }
 

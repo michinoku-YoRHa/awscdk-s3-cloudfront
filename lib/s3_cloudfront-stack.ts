@@ -10,7 +10,6 @@ import {
   aws_certificatemanager as acm,
 } from 'aws-cdk-lib';
 
-// 外部から取得するパラメータを定義
 interface S3CloudfrontStackProps extends cdk.StackProps {
   domainName: string;
   certificateArn: string;
@@ -18,6 +17,8 @@ interface S3CloudfrontStackProps extends cdk.StackProps {
 }
 
 export class S3CloudfrontStack extends cdk.Stack {
+  public readonly distributhinId: string;
+
   constructor(scope: Construct, id: string, props: S3CloudfrontStackProps) {
     super(scope, id, props);
     
@@ -29,7 +30,6 @@ export class S3CloudfrontStack extends cdk.Stack {
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
     });
 
-    // ACM証明書の読み込み(別スタックから)
     const certificate = acm.Certificate.fromCertificateArn(this, 'WebSiteCert', props.certificateArn);
 
     const oac = new cloudfront.S3OriginAccessControl(this, 'OAC', {
@@ -46,19 +46,30 @@ export class S3CloudfrontStack extends cdk.Stack {
         ),          
       },
       defaultRootObject: 'index.html',
-        // 独自ドメインの指定
+        // エラー時にエラー用ページを表示
+      errorResponses: [
+        {
+            // エラー表示を行うステータスを指定
+          httpStatus: 404,
+            // 表示するエラー用ページを指定
+          responsePagePath: '/error.html',
+            // TTLの指定(0にするとデバック時に便利)
+          ttl: cdk.Duration.seconds(0),
+        },
+        {
+          httpStatus: 403,
+          responsePagePath: '/error.html',
+          ttl: cdk.Duration.seconds(0),
+        },
+      ],
       domainNames: [props.domainName],
-        // 証明書の指定
       certificate: certificate,
     });
+    this.distributhinId = distribution.distributionId;
 
-    // Route53レコード作成
     new route53.ARecord(this, 'AliasRecord', {
-        // ホストゾーン指定
       zone: props.hostedZone,
-        // レコード指定
       recordName: '',
-        // ターゲット指定
       target: route53.RecordTarget.fromAlias(new route53_targets.CloudFrontTarget(distribution)),
     });
 

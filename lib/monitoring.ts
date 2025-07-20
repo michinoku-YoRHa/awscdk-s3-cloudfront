@@ -3,6 +3,7 @@ import { Construct } from 'constructs';
 import {
     aws_cloudwatch as cloudwatch,
     aws_cloudwatch_actions as actions,
+    aws_logs as logs,
     aws_sns as sns,
     aws_sns_subscriptions as subscriptions,
     aws_s3 as s3,
@@ -31,20 +32,32 @@ export class MonitoringStack extends cdk.Stack {
         logBucket.addLifecycleRule({
             prefix: `AWSLogs/${cdk.Aws.ACCOUNT_ID}/CloudTrail`,
             expiration: cdk.Duration.days(180),
-        })
+        });
+
+        // CloudWatchLogsロググループ作成
+        const logGroup = new logs.LogGroup(this, 'LogGroup', {
+            logGroupName: `CloudWatchLogs-LogGroup-${cdk.Aws.ACCOUNT_ID}`,
+        });
 
         // SNSトピックの作成
-        const topic = new sns.Topic(this, 'AlarmTopic');
+        const topic = new sns.Topic(this, 'AlarmTopic', {
+            topicName: `sns-topic-${cdk.Aws.ACCOUNT_ID}`,
+        });
         // トピックにサブスクリプションを追加
         topic.addSubscription(new subscriptions.EmailSubscription(props.email));
         this.snsTopic = topic;
 
         // CloudTrail証跡
         const trail = new cloudtrail.Trail(this, 'Trail', {
-            // 出力先指定
+            trailName: `trail-${cdk.Aws.ACCOUNT_ID}`,
+            // 出力先S3バケット指定
             bucket: logBucket,
-            // 今回はLogsには出力しない
-            cloudWatchLogGroup: undefined,
+            // CloudWatch Logsへのログ出力を有効化
+            sendToCloudWatchLogs: true,
+            // 出力先ロググループ指定
+            cloudWatchLogGroup: logGroup,
+            // ロググループ側のログ保持期間指定
+            cloudWatchLogsRetention: logs.RetentionDays.ONE_WEEK,
             // グローバルな管理イベントを単一S3バケットに格納させる
             isMultiRegionTrail: true,
         });
@@ -55,5 +68,33 @@ export class MonitoringStack extends cdk.Stack {
                 readWriteType: cloudtrail.ReadWriteType.WRITE_ONLY,
             },
         );
+
+        // オリジンバケットのデータイベントを監視するメトリクス作成
+        new logs.MetricFilter(this, 'S3PutAndDelete', {
+            // 参照するロググループの指定
+            logGroup: logGroup,
+            // メトリクス名前空間
+            metricNamespace: 'S3DataEvent',
+            // メトリクス名
+            metricName: 'PutDeleteCount',
+            // メトリクスのフィルター
+            filterPattern: logs.FilterPattern.literal('($.eventName="PutObject") || ($.eventName="DeleteObject")'),
+            // 対象イベント発生時にメトリクスに計上する数
+            metricValue: '1',
+        });
+
+        // メトリクスを基にアラーム作成
+        new cloudwatch.Alarm(this, 'S3PutDeleteAlarm', {
+            metric: new cloudwatch.Metric({
+                // logsで作成した名前空間を指定
+                namespace: 'S3DataEvent',
+                metricName: 'PutDeleteCount',
+                // 
+                statistic: cloudwatch.Stats.SUM,
+                period: cdk.Duration.minutes(5),
+            }),
+            threshold: 1,
+            evaluationPeriods: 1,
+        }).addAlarmAction(new actions.SnsAction(this.snsTopic));
     }
 }

@@ -4,7 +4,6 @@ import {
     aws_cloudwatch as cloudwatch,
     aws_cloudwatch_actions as actions,
     aws_sns as sns,
-    aws_sns_subscriptions as subscriptions,
 } from 'aws-cdk-lib';
 
 interface MonitoringUSStackProps extends cdk.StackProps {
@@ -79,7 +78,7 @@ export class MonitoringUSStack extends cdk.Stack {
                 period: cdk.Duration.minutes(5),
             }),
             // 閾値
-            threshold: 10,
+            threshold: 100,
             // 評価期間
             evaluationPeriods: 1,
         });

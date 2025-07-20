@@ -17,6 +17,7 @@ const route53Stack = new Route53Stack(app, 'Route53Stack', {
         account: account
     },
     domainName: domainName,
+    crossRegionReferences: true,
 })
 
 const certificateStack = new CertificateStack(app, 'CertificateStack', {
@@ -45,7 +46,6 @@ const monitoringStack = new MonitoringStack(app, 'MonitoringStack', {
         region: 'ap-northeast-1',
         account: account,
     },
-    crossRegionReferences: true,
     email: email,
     originBucket: s3CloudfrontStack.originBucket,
 })
@@ -56,6 +56,6 @@ new MonitoringUSStack(app, 'MonitoringUSStack', {
         account: account,
     },
     distributionId: s3CloudfrontStack.distributhinId,
-    crossRegionReferences: true,
     snsTopic: monitoringStack.snsTopic,
+    crossRegionReferences: true,
 });

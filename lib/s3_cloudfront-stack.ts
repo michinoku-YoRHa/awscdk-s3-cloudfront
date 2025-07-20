@@ -18,6 +18,7 @@ interface S3CloudfrontStackProps extends cdk.StackProps {
 
 export class S3CloudfrontStack extends cdk.Stack {
   public readonly distributhinId: string;
+  public readonly originBucket: s3.Bucket;
 
   constructor(scope: Construct, id: string, props: S3CloudfrontStackProps) {
     super(scope, id, props);
@@ -29,6 +30,7 @@ export class S3CloudfrontStack extends cdk.Stack {
       publicReadAccess: false,
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
     });
+    this.originBucket = s3Bucket;
 
     const certificate = acm.Certificate.fromCertificateArn(this, 'WebSiteCert', props.certificateArn);
 

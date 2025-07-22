@@ -56,6 +56,6 @@ new MonitoringUSStack(app, 'MonitoringUSStack', {
         account: account,
     },
     distributionId: s3CloudfrontStack.distributhinId,
-    snsTopic: monitoringStack.snsTopic,
+    email: email,
     crossRegionReferences: true,
 });

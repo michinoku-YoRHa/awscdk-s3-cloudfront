@@ -32,6 +32,20 @@ export class S3CloudfrontStack extends cdk.Stack {
     });
     this.originBucket = s3Bucket;
 
+    // cloudfrontログ出力用バケットの作成
+    const cloudfrontLogBucket = new s3.Bucket(this, 'CloudFrontLogBucket', {
+      bucketName: `s3-cloudfront-logbucket-${cdk.Aws.ACCOUNT_ID}-${cdk.Aws.REGION}`,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+      // bucket-owner-full-controlのバケットポリシーを追加
+      objectOwnership: s3.ObjectOwnership.BUCKET_OWNER_PREFERRED,
+    });
+    cloudfrontLogBucket.addLifecycleRule({
+      prefix: `AWSLogs/${cdk.Aws.ACCOUNT_ID}/CloudFront`,
+      expiration: cdk.Duration.days(30),
+    });
+
+
     const certificate = acm.Certificate.fromCertificateArn(this, 'WebSiteCert', props.certificateArn);
 
     const oac = new cloudfront.S3OriginAccessControl(this, 'OAC', {
@@ -48,14 +62,10 @@ export class S3CloudfrontStack extends cdk.Stack {
         ),          
       },
       defaultRootObject: 'index.html',
-        // エラー時にエラー用ページを表示
       errorResponses: [
         {
-            // エラー表示を行うステータスを指定
           httpStatus: 404,
-            // 表示するエラー用ページを指定
           responsePagePath: '/error.html',
-            // TTLの指定(0にするとデバック時に便利)
           ttl: cdk.Duration.seconds(0),
         },
         {
@@ -66,6 +76,10 @@ export class S3CloudfrontStack extends cdk.Stack {
       ],
       domainNames: [props.domainName],
       certificate: certificate,
+      // ログ出力有効化
+      enableLogging: true,
+      // ログ格納先
+      logBucket: cloudfrontLogBucket,
     });
     this.distributhinId = distribution.distributionId;
 

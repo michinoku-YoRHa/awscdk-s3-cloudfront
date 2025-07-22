@@ -4,11 +4,12 @@ import {
     aws_cloudwatch as cloudwatch,
     aws_cloudwatch_actions as actions,
     aws_sns as sns,
+    aws_sns_subscriptions as subscriptions,
 } from 'aws-cdk-lib';
 
 interface MonitoringUSStackProps extends cdk.StackProps {
     distributionId: string;
-    snsTopic: sns.Topic;
+    email: string;
 }
 
 export class MonitoringUSStack extends cdk.Stack {
@@ -65,6 +66,12 @@ export class MonitoringUSStack extends cdk.Stack {
             }),
         );
 
+        // アラーム先SNSの作成
+        const usAlarmSNS = new sns.Topic(this, 'USSNSTopic', {
+            topicName: `sns-topic-us-${cdk.Aws.ACCOUNT_ID}`
+        });
+        usAlarmSNS.addSubscription(new subscriptions.EmailSubscription(props.email))
+
         // CloudWatchアラームの作成
         const alarm = new cloudwatch.Alarm(this, '4xxErrorAlarm', {
             alarmName: 'CloudFront-4xxErrors-Alarm',
@@ -83,6 +90,6 @@ export class MonitoringUSStack extends cdk.Stack {
             evaluationPeriods: 1,
         });
         // アラーム発生時のアクションを指定
-        alarm.addAlarmAction(new actions.SnsAction(props.snsTopic));
+        alarm.addAlarmAction(new actions.SnsAction(usAlarmSNS));
     }
 }

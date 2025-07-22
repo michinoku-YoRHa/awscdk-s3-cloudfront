@@ -23,13 +23,13 @@ export class MonitoringStack extends cdk.Stack {
 
 
         // 監視ログ格納用のS3バケット
-        const logBucket = new s3.Bucket(this, 'LogBucket', {
-            bucketName: `s3-logbucket-${cdk.Aws.ACCOUNT_ID}-${cdk.Aws.REGION}`,
+        const cloudtrailLogBucket = new s3.Bucket(this, 'LogBucket', {
+            bucketName: `s3-cloudtrail-logbucket-${cdk.Aws.ACCOUNT_ID}-${cdk.Aws.REGION}`,
             removalPolicy: cdk.RemovalPolicy.DESTROY,
             autoDeleteObjects: true,
         });
         // CloudTrailログの保持期間をライフサイクルルールで指定
-        logBucket.addLifecycleRule({
+        cloudtrailLogBucket.addLifecycleRule({
             prefix: `AWSLogs/${cdk.Aws.ACCOUNT_ID}/CloudTrail`,
             expiration: cdk.Duration.days(180),
         });
@@ -37,6 +37,7 @@ export class MonitoringStack extends cdk.Stack {
         // CloudWatchLogsロググループ作成
         const logGroup = new logs.LogGroup(this, 'LogGroup', {
             logGroupName: `CloudWatchLogs-LogGroup-${cdk.Aws.ACCOUNT_ID}`,
+            removalPolicy: cdk.RemovalPolicy.DESTROY,
         });
 
         // SNSトピックの作成
@@ -51,7 +52,7 @@ export class MonitoringStack extends cdk.Stack {
         const trail = new cloudtrail.Trail(this, 'Trail', {
             trailName: `trail-${cdk.Aws.ACCOUNT_ID}`,
             // 出力先S3バケット指定
-            bucket: logBucket,
+            bucket: cloudtrailLogBucket,
             // CloudWatch Logsへのログ出力を有効化
             sendToCloudWatchLogs: true,
             // 出力先ロググループ指定
@@ -78,7 +79,7 @@ export class MonitoringStack extends cdk.Stack {
             // メトリクス名
             metricName: 'PutDeleteCount',
             // メトリクスのフィルター
-            filterPattern: logs.FilterPattern.literal('($.eventName="PutObject") || ($.eventName="DeleteObject")'),
+            filterPattern: logs.FilterPattern.literal('{$.eventName="PutObject" || $.eventName="DeleteObject"}'),
             // 対象イベント発生時にメトリクスに計上する数
             metricValue: '1',
         });

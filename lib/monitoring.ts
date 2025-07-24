@@ -16,7 +16,6 @@ interface MonitoringStackProps extends cdk.StackProps {
 }
 
 export class MonitoringStack extends cdk.Stack {
-    public readonly snsTopic: sns.Topic;
 
     constructor(scope: Construct, id: string, props:MonitoringStackProps) {
         super(scope, id, props);
@@ -46,7 +45,6 @@ export class MonitoringStack extends cdk.Stack {
         });
         // トピックにサブスクリプションを追加
         topic.addSubscription(new subscriptions.EmailSubscription(props.email));
-        this.snsTopic = topic;
 
         // CloudTrail証跡
         const trail = new cloudtrail.Trail(this, 'Trail', {
@@ -96,6 +94,6 @@ export class MonitoringStack extends cdk.Stack {
             }),
             threshold: 1,
             evaluationPeriods: 1,
-        }).addAlarmAction(new actions.SnsAction(this.snsTopic));
+        }).addAlarmAction(new actions.SnsAction(topic));
     }
 }

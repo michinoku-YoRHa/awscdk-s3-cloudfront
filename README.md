@@ -20,11 +20,28 @@ AWS CDK(typescript)を用いて以下の構成要素をデプロイします。
 
 ## 構成図
 
+![構成図](architecture.png)
+
+| 役割 | 説明 |
+|-----------|-----------|
+|`user` | CloudFrontから配信されるコンテンツを利用する |
+|`operator` | CloudWatchからのアラートをSNS通知として受け取る |
+
+
+
 ## デプロイ手順
+
+### 前提条件
+
+以下の環境で動作を確認しています。
+
+- Node.js `vv22.12.0`
+- AWS CLI `v2.22.28` (Python/3.12.6 Windows/11)
+- AWS CDK `v2.1022.0` (build b0e6bc0)
 
 ### セットアップ
 
-```
+```powershell
 git clone https://github.com/michinoku-YoRHa/awscdk-s3-cloudfront.git
 cd awscdk-s3-cloudfront
 npm install
@@ -33,9 +50,9 @@ cdk bootstrap aws://<accountID>/ap-northeast-1 aws://<accountID>/us-east-1
 
 ### cdk.json
 
-取得したドメイン名とメールアドレスをパラメータとして設定します。
+`cdk.json`に取得したドメイン名とメールアドレスをパラメータとして設定します。
 
-```
+```json
   "context": {
     "domainName": "yourdomain.com",
     "email": "youraddress@mail.com",
@@ -44,6 +61,6 @@ cdk bootstrap aws://<accountID>/ap-northeast-1 aws://<accountID>/us-east-1
 
 ### デプロイ
 
-```
+```powershell
 cdk deploy --all
 ```

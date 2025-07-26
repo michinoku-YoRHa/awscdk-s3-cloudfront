@@ -31,6 +31,14 @@ AWS CDK(typescript)を用いて以下の構成要素をデプロイします。
 
 ## デプロイ手順
 
+### 前提条件
+
+以下の環境で動作を確認しています。
+
+- Node.js `vv22.12.0`
+- AWS CLI `v2.22.28` (Python/3.12.6 Windows/11)
+- AWS CDK `v2.1022.0` (build b0e6bc0)
+
 ### セットアップ
 
 ```powershell

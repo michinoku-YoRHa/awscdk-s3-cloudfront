@@ -20,6 +20,8 @@ AWS CDK(typescript)を用いて以下の構成要素をデプロイします。
 
 ## 構成図
 
+![構成図](architecture.png)
+
 ## デプロイ手順
 
 ### セットアップ
